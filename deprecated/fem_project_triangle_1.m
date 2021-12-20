@@ -98,11 +98,11 @@ d(5:2*n-4)=inv(K_part)*F_known';
 F=K*d';
 %% Answer - Maximum Displacement
 [d_max, idx]=max(abs(d));
-fprintf("Node %d has maximum displacement: %d [mm].\n which is " + ...
+fprintf("Node %d has maximum displacement: %d [m].\n which is " + ...
     "%.2f m far from left end.\n", ...
-    ceil(idx/2), d_max*10^3, ceil((idx-1)/4)*L/M);
+    ceil(idx/2), d_max, ceil((idx-1)/4)*L/M);
 %% Answer - Maximum Stress
-sigmas=zeros(3,n);
+sigmas=zeros(3,k);
 for element_index=1:k
     i=element(1, element_index);
     j=element(2, element_index);
@@ -111,9 +111,6 @@ for element_index=1:k
     d_partial(1:2)=d(2*element(1,element_index)-1:2*element(1,element_index));
     d_partial(3:4)=d(2*element(2,element_index)-1:2*element(2,element_index));
     d_partial(5:6)=d(2*element(3,element_index)-1:2*element(3,element_index));
-    sigma = D*Bs{element_index}*d_partial'; % Stress of an element was found
-
-    for idx=1:3
-        sigmas(:,element(idx,element_index))= sigmas(:,element(idx,element_index))+sigma;
-    end
+    sigma = D*Bs{element_index}*d_partial';
+    sigmas(:,element_index)=sigma;
 end

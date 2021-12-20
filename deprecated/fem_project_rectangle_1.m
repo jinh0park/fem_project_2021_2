@@ -15,9 +15,9 @@ Y=800*10^6;     % Yield Strength of the girder [Pa]
 M=10;              % The number of divided section of the length (=k/2)
 k=M;           % The number of rectangle elements
 n=2*k+2;          % The number of nodes while using triangle elements
-D=E/(1+v)*(1-2*v)*[1-v v 0; 
-                    v 1-v 0; 
-                    0 0 (1-v)/2];   % D matrix for plane strain
+D=E/(1-v^2)*[1 v 0; 
+                 v 1 0; 
+                 0 0 (1-v)/2];   % D matrix for plane stress
 %% Set (x, y) coordinates of the nodes
 % 1 - 3 - 5 - ... -(n-1)  
 % |   |   |   ...   |
@@ -96,11 +96,11 @@ d(5:2*n-4)=inv(K_part)*F_known';
 F=K*d';
 %% Answer - Maximum Displacement
 [d_max, idx]=max(abs(d));
-fprintf("Node %d has maximum displacement: %d [mm].\n which is " + ...
+fprintf("Node %d has maximum displacement: %d [m].\n which is " + ...
     "%.2f m far from left end.\n", ...
-    ceil(idx/2), d_max*10^3, ceil((idx-1)/4)*L/M);
+    ceil(idx/2), d_max, ceil((idx-1)/4)*L/M);
 %% Answer - Maximum Stress
-sigmas=zeros(3,n);
+sigmas=zeros(3,k);
 for element_index=1:k
     i=element(1, element_index);
     j=element(2, element_index);
@@ -112,17 +112,5 @@ for element_index=1:k
     d_partial(5:6)=d(2*element(3,element_index)-1:2*element(3,element_index));
     d_partial(7:8)=d(2*element(4,element_index)-1:2*element(4,element_index));
     sigma = D*Bs{element_index}*d_partial'; % Stress of an element was found
-
-    for idx=1:4
-        if idx==1
-            sss=subs(sigma, [r, s], [-1, 1]);
-        elseif idx==2
-            sss=subs(sigma, [r, s], [-1, -1]);
-        elseif idx==3
-            sss=subs(sigma, [r, s], [1, -1]);
-        elseif idx==4
-            sss=subs(sigma, [r, s], [1, 1]);
-        end
-        sigmas(:,element(idx,element_index))= sigmas(:,element(idx,element_index))+sss;
-    end
+    sigmas(:,element_index)=subs(sigma, [r, s], [0, 0]);
 end
